@@ -146,12 +146,12 @@ namespace EAT
 
         // Constructors
         MASTER() {
-            clear();
+            init();
             assert(is_valid());
         }
         template <T_SIZE t_total_size_2>
         MASTER(const MASTER<T_SIZE, t_total_size_2>& src) {
-            clear();
+            init();
             merge<t_total_size_2>(src);
             assert(is_valid());
         }
@@ -179,7 +179,7 @@ namespace EAT
                     ret = true;
                 } else {
                     // different total size
-                    clear();
+                    init();
                     ret = merge<t_total_size_2>(src);
                 }
             } else {
@@ -231,10 +231,16 @@ namespace EAT
         }
 
         // initialize
-        void clear() {
+        void init() {
             m_head.m_total_size = t_total_size;
             m_head.m_boudary_1 = head_size();
             m_head.m_boudary_2 = t_total_size;
+            assert(is_valid());
+        }
+        void clear() {
+            assert(is_valid());
+            m_head.m_boudary_1 = head_size();
+            m_head.m_boudary_2 = m_head.m_total_size;
             assert(is_valid());
         }
 
@@ -274,8 +280,8 @@ namespace EAT
                     const size_type num = num_entries();
                     const entry_type *entries = get_entries();
                     for (size_type i = 0; i < num; ++i) {
-                        if (entries[i].m_data_size == 0) {
-                            // data size must be non-zero
+                        if (entries[i].m_data_size <= 0) {
+                            // data size must be positive
                             ret = false;
                             assert(0);
                             break;
@@ -491,7 +497,7 @@ namespace EAT
         void *malloc(size_type siz) {
             void *ret;
             assert(is_valid());
-            if (siz == 0) {
+            if (siz <= 0) {
                 // size is zero
                 ret = NULL;
             } else {
@@ -535,7 +541,7 @@ namespace EAT
             if (ptr == NULL) {
                 // pointer is NULL
                 ret = malloc(siz);
-            } else if (siz == 0) {
+            } else if (siz <= 0) {
                 // size is zero
                 free(ptr);
                 ret = NULL;
@@ -659,18 +665,26 @@ namespace EAT
                 using namespace std;
                 if (m_head.m_total_size < total) {
                     const size_type diff = total - m_head.m_total_size;
-                    // move entries
-                    memmove(p + diff, p, num * entry_size());
-                    // fix total
-                    m_head.m_total_size = total;
-                } else if (m_head.m_total_size > total) {
-                    const size_type diff = m_head.m_total_size - total;
-                    // move entries
-                    memmove(p, p + diff, num * entry_size());
-                    // fix total
-                    m_head.m_total_size = total;
+                    if (free_area_size() >= diff) {
+                        // move entries
+                        memmove(p + diff, p, num * entry_size());
+                        m_head.m_boudary_2 -= diff;
+                        // fix total
+                        m_head.m_total_size = total;
+                        assert(m_head.is_valid());
+                        ret = true;
+                    }
+                } else {
+                    if (m_head.m_total_size > total) {
+                        const size_type diff = m_head.m_total_size - total;
+                        // move entries
+                        memmove(p - diff, p, num * entry_size());
+                        m_head.m_boudary_2 -= diff;
+                        // fix total
+                        m_head.m_total_size = total;
+                        ret = true;
+                    }
                 }
-                ret = true;
             }
             assert(is_valid());
             return ret;
@@ -704,7 +718,7 @@ namespace EAT
             assert(is_valid());
             return ret;
         } // load_from_file
-        bool save_to_file(const char *file_name) const {
+        bool save_to_file   (const char *file_name) const {
             assert(is_valid());
             using namespace std;
             bool ret = false;
@@ -726,20 +740,42 @@ namespace EAT
             return ret;
         } // save_to_file
 
-        // bool T_ENTRY_FN(entry_type&);
+        // callback: bool T_ENTRY_FN(entry_type&);
         template <typename T_ENTRY_FN>
         void foreach_entry(const T_ENTRY_FN& fn) {
             const size_type num = num_entries();
             entry_type *entries = get_entries();
+            for (int i = int(num - 1); i >= 0; --i) {
+                if (!fn(entries[i])) {
+                    break;
+                }
+            }
+        }
+        // callback: bool T_ENTRY_FN(const entry_type&);
+        template <typename T_ENTRY_FN>
+        void foreach_entry(const T_ENTRY_FN& fn) const {
+            const size_type num = num_entries();
+            const entry_type *entries = get_entries();
+            for (int i = int(num - 1); i >= 0; --i) {
+                if (!fn(entries[i])) {
+                    break;
+                }
+            }
+        }
+        // callback: bool T_ENTRY_FN(entry_type&);
+        template <typename T_ENTRY_FN>
+        void rforeach_entry(const T_ENTRY_FN& fn) {
+            const size_type num = num_entries();
+            entry_type *entries = get_entries();
             for (size_type i = 0; i < num; ++i) {
                 if (!fn(entries[i])) {
                     break;
                 }
             }
         }
-        // bool T_ENTRY_FN(const entry_type&);
+        // callback: bool T_ENTRY_FN(const entry_type&);
         template <typename T_ENTRY_FN>
-        void foreach_entry(const T_ENTRY_FN& fn) const {
+        void rforeach_entry(const T_ENTRY_FN& fn) const {
             const size_type num = num_entries();
             const entry_type *entries = get_entries();
             for (size_type i = 0; i < num; ++i) {
@@ -748,9 +784,35 @@ namespace EAT
                 }
             }
         }
-        // bool T_ENTRY_FN(entry_type&);
+        // callback: bool T_ENTRY_FN(entry_type&);
         template <typename T_ENTRY_FN>
         void foreach_valid_entry(const T_ENTRY_FN& fn) {
+            const size_type num = num_entries();
+            entry_type *entries = get_entries();
+            for (int i = int(num - 1); i >= 0; --i) {
+                if (entries[i].is_valid()) {
+                    if (!fn(entries[i])) {
+                        break;
+                    }
+                }
+            }
+        }
+        // callback: bool T_ENTRY_FN(const entry_type&);
+        template <typename T_ENTRY_FN>
+        void foreach_valid_entry(const T_ENTRY_FN& fn) const {
+            const size_type num = num_entries();
+            const entry_type *entries = get_entries();
+            for (int i = int(num - 1); i >= 0; --i) {
+                if (entries[i].is_valid()) {
+                    if (!fn(entries[i])) {
+                        break;
+                    }
+                }
+            }
+        }
+        // callback: bool T_ENTRY_FN(entry_type&);
+        template <typename T_ENTRY_FN>
+        void rforeach_valid_entry(const T_ENTRY_FN& fn) {
             const size_type num = num_entries();
             entry_type *entries = get_entries();
             for (size_type i = 0; i < num; ++i) {
@@ -761,9 +823,9 @@ namespace EAT
                 }
             }
         }
-        // bool T_ENTRY_FN(const entry_type&);
+        // callback: bool T_ENTRY_FN(const entry_type&);
         template <typename T_ENTRY_FN>
-        void foreach_valid_entry(const T_ENTRY_FN& fn) const {
+        void rforeach_valid_entry(const T_ENTRY_FN& fn) const {
             const size_type num = num_entries();
             const entry_type *entries = get_entries();
             for (size_type i = 0; i < num; ++i) {
@@ -774,9 +836,37 @@ namespace EAT
                 }
             }
         }
-        // bool T_PTR_FN(void *);
+        // callback: bool T_PTR_FN(void *);
         template <typename T_PTR_FN>
         void foreach_valid_ptr(const T_PTR_FN& fn) {
+            const size_type num = num_entries();
+            entry_type *entries = get_entries();
+            for (int i = int(num - 1); i >= 0; --i) {
+                if (entries[i].is_valid()) {
+                    void *ptr = ptr_from_offset(entries[i].m_offset);
+                    if (!fn(ptr)) {
+                        break;
+                    }
+                }
+            }
+        }
+        // callback: bool T_PTR_FN(const void *);
+        template <typename T_PTR_FN>
+        void foreach_valid_ptr(const T_PTR_FN& fn) const {
+            const size_type num = num_entries();
+            const entry_type *entries = get_entries();
+            for (int i = int(num - 1); i >= 0; --i) {
+                if (entries[i].is_valid()) {
+                    const void *ptr = ptr_from_offset(entries[i].m_offset);
+                    if (!fn(ptr)) {
+                        break;
+                    }
+                }
+            }
+        }
+        // callback: bool T_PTR_FN(void *);
+        template <typename T_PTR_FN>
+        void rforeach_valid_ptr(const T_PTR_FN& fn) {
             const size_type num = num_entries();
             entry_type *entries = get_entries();
             for (size_type i = 0; i < num; ++i) {
@@ -788,9 +878,9 @@ namespace EAT
                 }
             }
         }
-        // bool T_PTR_FN(const void *);
+        // callback: bool T_PTR_FN(const void *);
         template <typename T_PTR_FN>
-        void foreach_valid_ptr(const T_PTR_FN& fn) const {
+        void rforeach_valid_ptr(const T_PTR_FN& fn) const {
             const size_type num = num_entries();
             const entry_type *entries = get_entries();
             for (size_type i = 0; i < num; ++i) {
@@ -815,7 +905,7 @@ namespace EAT
         MASTER<T_SIZE, t_total_size> *mas =
             reinterpret_cast<MASTER<T_SIZE, t_total_size> *>(data_block);
         if (do_init) {
-            mas->clear();
+            mas->init();
         }
         assert(mas->is_valid());
         return mas;

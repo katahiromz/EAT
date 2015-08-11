@@ -102,6 +102,14 @@ void test3() {
     puts("master2");
     master2.foreach_valid_ptr(print_ptr_fn);
 
+    master1.resize_total(100);
+    puts("master1 resize_total");
+    master1.foreach_valid_ptr(print_ptr_fn);
+
+    master1.resize_total(200);
+    puts("master1 resize_total");
+    master1.foreach_valid_ptr(print_ptr_fn);
+
     bool flag = master1.merge(master2);
     assert(flag);
 
