@@ -104,27 +104,54 @@ void test3() {
     }
 }
 
+template <typename T_SIZE, T_SIZE t_total_size>
+void test4() {
+    printf("## test4(%d,%d)\n", int(sizeof(T_SIZE)), int(t_total_size));
+
+    EAT::MASTER<T_SIZE, t_total_size> master;
+    //typedef typename EAT::MASTER<T_SIZE, t_total_size>::entry_type entry_type;
+
+    void *p1 = master.malloc(100);
+    assert(p1 != NULL);
+    assert(master._msize(p1) == 100);
+
+    void *p2 = master.malloc(100);
+    assert(p2 != NULL);
+    assert(master._msize(p2) == 100);
+
+    assert(master.valid_data_size() == 200);
+    assert(master.num_entries() == 2);
+
+    master.free(p2);
+    assert(master.num_entries() == 1);
+    assert(master.valid_data_size() == 100);
+    master.free(p1);
+    assert(master.num_entries() == 0);
+    assert(master.valid_data_size() == 0);
+
+    assert(master.empty());
+}
+
 int main(void) {
     test1<short, 300>();
     test1<long, 300>();
-    test1<__int64, 300>();
     test1<short, 400>();
     test1<long, 400>();
-    test1<__int64, 400>();
 
     test2<short, 300>();
     test2<long, 300>();
-    test2<__int64, 300>();
     test2<short, 400>();
     test2<long, 400>();
-    test2<__int64, 400>();
 
     test3<short, 300>();
     test3<long, 300>();
-    test3<__int64, 300>();
     test3<short, 400>();
     test3<long, 400>();
-    test3<__int64, 400>();
+
+    test4<short, 300>();
+    test4<long, 300>();
+    test4<short, 400>();
+    test4<long, 400>();
 
     return 0;
 } // main

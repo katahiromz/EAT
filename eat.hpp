@@ -264,10 +264,6 @@ namespace EAT
                     // used area size must be head size + data area size + table size
                     assert(0);
                     ret = false;
-                } else if (entry_size() == 0) {
-                    // entry size must be non-zero
-                    assert(0);
-                    ret = false;
                 } else if ((table_size() % entry_size()) != 0) {
                     // table size must be a multiple of entry size
                     assert(0);
@@ -387,7 +383,7 @@ namespace EAT
         }
 
         // fetch the entry
-        entry_type *fetch(void *ptr) {
+        entry_type *fetch_entry(void *ptr) {
             entry_type *ret = NULL;
             assert(is_valid());
             assert(ptr != NULL);
@@ -410,7 +406,7 @@ namespace EAT
             assert(is_valid());
             return ret;
         } // fetch
-        const entry_type *fetch(void *ptr) const {
+        const entry_type *fetch_entry(void *ptr) const {
             const entry_type *ret = NULL;
             assert(is_valid());
             assert(ptr != NULL);
@@ -438,6 +434,26 @@ namespace EAT
             assert(is_valid());
             if (entry != NULL) {
                 entry->invalidate();
+
+                entry_type *entries = get_entries();
+                if (entry == entries) {
+                    // top entry
+                    const size_type num = num_entries();
+                    size_type i, data_deletion = 0;
+                    for (i = 0; i < num; ++i) {
+                        if (entries[i].is_valid()) {
+                            break;
+                        }
+                        data_deletion += entries[i].m_data_size;
+                    }
+                    // free invalids
+                    if (i == num) {
+                        clear();
+                    } else {
+                        m_head.m_boudary_1 -= data_deletion;
+                        m_head.m_boudary_2 += size_type(i * entry_size());
+                    }
+                }
             }
             assert(is_valid());
         }
@@ -462,7 +478,7 @@ namespace EAT
         size_type _msize(void *ptr) const {
             assert(is_valid());
             size_type ret = 0;
-            const entry_type *entry = fetch(ptr);
+            const entry_type *entry = fetch_entry(ptr);
             if (entry != NULL) {
                 // entry was found
                 ret = entry->m_data_size;
@@ -487,7 +503,7 @@ namespace EAT
                 } else {
                     // OK, allocatable
                     const size_type offset = m_head.m_boudary_1;
-                    ret = &m_space[offset];
+                    ret = reinterpret_cast<void *>(&m_space[offset]);
                     m_head.m_boudary_1 += siz;
                     m_head.m_boudary_2 -= entry_size();
                     get_entries()[0] = entry_type(siz, offset);
@@ -524,7 +540,7 @@ namespace EAT
                 ret = NULL;
             } else {
                 // find the entry
-                entry_type *entry = fetch(ptr);
+                entry_type *entry = fetch_entry(ptr);
                 assert(entry != NULL);
                 if (entry == NULL) {
                     // entry not found
@@ -553,8 +569,11 @@ namespace EAT
         void free(void * ptr) {
             assert(is_valid());
             if (ptr != NULL) {
-                entry_type *entry = fetch(ptr);
-                free_entry(entry);
+                entry_type *entry = fetch_entry(ptr);
+                if (entry) {
+                    // entry was found
+                    free_entry(entry);
+                }
             }
             assert(is_valid());
         } // free
