@@ -80,7 +80,7 @@ void test3() {
 
     EAT::MASTER<T_SIZE, t_total_size> master1;
     EAT::MASTER<T_SIZE, t_total_size> master2;
-    typedef typename EAT::MASTER<T_SIZE, t_total_size>::entry_type entry_type;
+    //typedef typename EAT::MASTER<T_SIZE, t_total_size>::entry_type entry_type;
 
     char *p1 = master1.strdup("ABC");
     char *p2 = master1.strdup("DEF");
