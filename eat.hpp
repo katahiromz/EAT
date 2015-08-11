@@ -628,25 +628,33 @@ namespace EAT
             assert(is_valid());
         } // compact
 
-        bool fixup() {
-            assert(is_valid());
+        bool resize_total(size_type total = t_total_size) {
             bool ret = false;
-            if (m_head.m_total_size < t_total_size) {
-                // total size differs
-                const size_type diff = t_total_size - m_head.m_total_size;
+            assert(is_valid());
+            assert(total <= t_total_size);
+            if (total <= t_total_size) {
                 const size_type num = num_entries();
                 entry_type *entries = get_entries();
                 char *p = reinterpret_cast<char *>(entries);
                 using namespace std;
-                // move entries
-                memmove(p + diff, p, num * entry_size());
-                // fix total size up
-                m_head.m_total_size = t_total_size;
+                if (m_head.m_total_size < total) {
+                    const size_type diff = total - m_head.m_total_size;
+                    // move entries
+                    memmove(p + diff, p, num * entry_size());
+                    // fix total
+                    m_head.m_total_size = total;
+                } else if (m_head.m_total_size > total) {
+                    const size_type diff = m_head.m_total_size - total;
+                    // move entries
+                    memmove(p, p + diff, num * entry_size());
+                    // fix total
+                    m_head.m_total_size = total;
+                }
                 ret = true;
             }
             assert(is_valid());
             return ret;
-        } // fixup
+        } // resize_total
 
         // file operations
         bool load_from_file(const char *file_name) {
@@ -664,7 +672,7 @@ namespace EAT
                     // is valid?
                     ret = is_valid();
                     if (ret) {
-                        fixup();
+                        resize_total();
                     } else {
                         clear();
                     }
