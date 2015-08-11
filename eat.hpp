@@ -629,6 +629,7 @@ namespace EAT
         } // compact
 
         bool fixup() {
+            assert(is_valid());
             bool ret = false;
             if (m_head.m_total_size < t_total_size) {
                 // total size differs
@@ -643,6 +644,7 @@ namespace EAT
                 m_head.m_total_size = t_total_size;
                 ret = true;
             }
+            assert(is_valid());
             return ret;
         } // fixup
 
