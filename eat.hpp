@@ -48,7 +48,8 @@ namespace EAT
 
         // Constructors
         ENTRY(size_type data_area_size, size_type offset) :
-            m_data_size(data_area_size), m_offset(offset), m_flags(FLAG_VALID) { }
+            m_data_size(data_area_size), m_offset(offset),
+            m_flags(FLAG_VALID) { }
         ENTRY(size_type data_area_size, size_type offset, size_type flags) :
             m_data_size(data_area_size), m_offset(offset), m_flags(flags) { }
 
