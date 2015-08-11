@@ -725,6 +725,83 @@ namespace EAT
             assert(is_valid());
             return ret;
         } // save_to_file
+
+        // bool T_ENTRY_FN(entry_type&);
+        template <typename T_ENTRY_FN>
+        void foreach_entry(const T_ENTRY_FN& fn) {
+            const size_type num = num_entries();
+            entry_type *entries = get_entries();
+            for (size_type i = 0; i < num; ++i) {
+                if (!fn(entries[i])) {
+                    break;
+                }
+            }
+        }
+        // bool T_ENTRY_FN(const entry_type&);
+        template <typename T_ENTRY_FN>
+        void foreach_entry(const T_ENTRY_FN& fn) const {
+            const size_type num = num_entries();
+            const entry_type *entries = get_entries();
+            for (size_type i = 0; i < num; ++i) {
+                if (!fn(entries[i])) {
+                    break;
+                }
+            }
+        }
+        // bool T_ENTRY_FN(entry_type&);
+        template <typename T_ENTRY_FN>
+        void foreach_valid_entry(const T_ENTRY_FN& fn) {
+            const size_type num = num_entries();
+            entry_type *entries = get_entries();
+            for (size_type i = 0; i < num; ++i) {
+                if (entries[i].is_valid()) {
+                    if (!fn(entries[i])) {
+                        break;
+                    }
+                }
+            }
+        }
+        // bool T_ENTRY_FN(const entry_type&);
+        template <typename T_ENTRY_FN>
+        void foreach_valid_entry(const T_ENTRY_FN& fn) const {
+            const size_type num = num_entries();
+            const entry_type *entries = get_entries();
+            for (size_type i = 0; i < num; ++i) {
+                if (entries[i].is_valid()) {
+                    if (!fn(entries[i])) {
+                        break;
+                    }
+                }
+            }
+        }
+        // bool T_PTR_FN(void *);
+        template <typename T_PTR_FN>
+        void foreach_valid_ptr(const T_PTR_FN& fn) {
+            const size_type num = num_entries();
+            entry_type *entries = get_entries();
+            for (size_type i = 0; i < num; ++i) {
+                if (entries[i].is_valid()) {
+                    void *ptr = ptr_from_offset(entries[i].m_offset);
+                    if (!fn(ptr)) {
+                        break;
+                    }
+                }
+            }
+        }
+        // bool T_PTR_FN(const void *);
+        template <typename T_PTR_FN>
+        void foreach_valid_ptr(const T_PTR_FN& fn) const {
+            const size_type num = num_entries();
+            const entry_type *entries = get_entries();
+            for (size_type i = 0; i < num; ++i) {
+                if (entries[i].is_valid()) {
+                    const void *ptr = ptr_from_offset(entries[i].m_offset);
+                    if (!fn(ptr)) {
+                        break;
+                    }
+                }
+            }
+        }
     }; // EAT::MASTER<T_SIZE, t_total_size>
 
     //////////////////////////////////////////////////////////////////////////

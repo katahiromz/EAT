@@ -69,6 +69,11 @@ void test2() {
     assert(mas->empty());
 }
 
+bool print_ptr_fn(void *ptr) {
+    puts(reinterpret_cast<char *>(ptr));
+    return true;
+}
+
 template <typename T_SIZE, T_SIZE t_total_size>
 void test3() {
     printf("## test3(%d,%d)\n", int(sizeof(T_SIZE)), int(t_total_size));
@@ -92,16 +97,16 @@ void test3() {
     assert(memcmp(p6, "PQR", 3) == 0);
     master2.free(p6);
 
+    puts("master1");
+    master1.foreach_valid_ptr(print_ptr_fn);
+    puts("master2");
+    master2.foreach_valid_ptr(print_ptr_fn);
+
     bool flag = master1.merge(master2);
     assert(flag);
 
-    entry_type *entries = master1.get_entries();
-    const T_SIZE num = master1.num_entries();
-    for (T_SIZE i = 0; i < num; ++i) {
-        if (entries[i].is_valid()) {
-            puts(reinterpret_cast<char *>(master1.ptr_from_offset(entries[i].m_offset)));
-        }
-    }
+    puts("master1");
+    master1.foreach_valid_ptr(print_ptr_fn);
 }
 
 template <typename T_SIZE, T_SIZE t_total_size>
