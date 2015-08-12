@@ -148,6 +148,13 @@ void test4() {
 }
 
 int main(void) {
+    assert(sizeof(int8_t) == 1);
+    assert(sizeof(int16_t) == 2);
+    assert(sizeof(int32_t) == 4);
+    assert(sizeof(uint8_t) == 1);
+    assert(sizeof(uint16_t) == 2);
+    assert(sizeof(uint32_t) == 4);
+
     test1<uint16_t, 300>();
     test1<uint32_t, 300>();
     test1<uint16_t, 400>();
@@ -168,7 +175,10 @@ int main(void) {
     test4<uint16_t, 400>();
     test4<uint32_t, 400>();
 
-#if defined(_WIN64) || defined(__x86_64__) || defined(__ppc64__)
+#if (defined(_WIN64) || defined(__x86_64__) || defined(__ppc64__))
+    assert(sizeof(int64_t) == 8);
+    assert(sizeof(uint64_t) == 8);
+
     test1<size_t, 300>();
     test1<size_t, 400>();
 
@@ -180,7 +190,7 @@ int main(void) {
 
     test4<size_t, 300>();
     test4<size_t, 400>();
-#endif
+#endif  // (defined(_WIN64) || defined(__x86_64__) || defined(__ppc64__))
 
     return 0;
 } // main
