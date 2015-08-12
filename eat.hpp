@@ -75,16 +75,53 @@ namespace EAT
     struct HEAD {
         // Types
         typedef T_SIZE                          size_type;
+        enum FLAGS {
+            SIZE_TYPE_SIZE_MASK = 0x000000FF,
+            FLAG_INVALID        = 0x00000100,
+            FLAG_HIDDEN         = 0x00000200,
+            FLAG_MOVEABLE       = 0x00000400,
+            FLAG_PUBLIC         = 0x00000800,
+            FLAG_CONFIDENTIAL   = 0x00001000,
+            FLAG_ARCHIVE        = 0x00002000,
+            FLAG_IMPORTANT      = 0x00004000,
+            FLAG_SYSTEM         = 0x00008000,
+            FLAG_UNCONFIRMED    = 0x00010000,
+            FLAG_DRAFT          = 0x00020000,
+            FLAG_FINAL          = 0x00040000,
+            FLAG_RENEWAL        = 0x00080000,
+            FLAG_EXPIRED        = 0x00100000,
+            FLAG_ENCRYPTED      = 0x00200000,
+            FLAG_INTERNAL       = 0x00400000,
+            FLAG_EXTERNAL       = 0x00800000,
+            FLAG_IMAGE          = 0x01000000,
+            FLAG_PROGRAM_DATA   = 0x02000000,
+            FLAG_MICROFILM      = 0x04000000,
+            FLAG_REPORT         = 0x08000000,
+            FLAG_LIST           = 0x10000000,
+            FLAG_EVIDENCE       = 0x20000000,
+            FLAG_AGREEMENT      = 0x40000000,
+            FLAG_COMMUNICATION  = 0x80000000
+        };
 
         // Members
-        size_type m_total_size;
-        size_type m_boudary_1;
-        size_type m_boudary_2;
+        char        m_magic[4];         // must be "EAT\0"
+        long        m_flags;
+        size_type   m_total_size;
+        size_type   m_boudary_1;
+        size_type   m_boudary_2;
 
         // Attributes
         bool is_valid() const {
             bool ret;
-            if (m_boudary_2 < m_boudary_1) {
+            if (m_magic[0] != 'E' || m_magic[1] != 'A' ||
+                m_magic[2] != 'T' || m_magic[3] != 0)
+            {
+                ret = false;
+            } else if (size_type_size() != size_type(sizeof(size_type))) {
+                ret = false;
+            } else if (m_flags & FLAG_INVALID) {
+                ret = false;
+            } else if (m_boudary_2 < m_boudary_1) {
                 ret = false;
             } else if (m_total_size < m_boudary_2) {
                 ret = false;
@@ -98,6 +135,9 @@ namespace EAT
         }
         const void *get_body() const {
             return this + 1;
+        }
+        size_type size_type_size() const {
+            return size_type(m_flags & SIZE_TYPE_SIZE_MASK);
         }
     }; // EAT::HEAD<T_SIZE>
 
@@ -232,6 +272,11 @@ namespace EAT
 
         // initialize
         void init() {
+            m_head.m_magic[0] = 'E';
+            m_head.m_magic[1] = 'A';
+            m_head.m_magic[2] = 'T';
+            m_head.m_magic[3] = 0;
+            m_head.m_flags = long(size_type_size());
             m_head.m_total_size = t_total_size;
             m_head.m_boudary_1 = head_size();
             m_head.m_boudary_2 = t_total_size;
@@ -308,6 +353,9 @@ namespace EAT
         }
         size_type head_size() const {
             return size_type(sizeof(head_type));
+        }
+        size_type size_type_size() const {
+            return size_type(sizeof(size_type));
         }
         size_type total_size() const {
             return m_head.m_total_size;
