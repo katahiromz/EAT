@@ -706,7 +706,7 @@ namespace EAT
 
                 // do scan the data area in reverse order
                 entry_type *ep = &entries[num]; // end of entries
-                for (int i = int(num - 1); i >= 0; --i) {
+                for (long i = long(num - 1); i >= 0; --i) {
                     if (entries[i].is_valid()) {
                         // this entry is valid
                         // shift to p
@@ -844,7 +844,7 @@ namespace EAT
             assert(is_valid());
             const size_type num = num_entries();
             entry_type *entries = get_entries();
-            for (int i = int(num - 1); i >= 0; --i) {
+            for (long i = long(num - 1); i >= 0; --i) {
                 if (!fn(entries[i])) {
                     break;
                 }
@@ -857,7 +857,7 @@ namespace EAT
             assert(is_valid());
             const size_type num = num_entries();
             const entry_type *entries = get_entries();
-            for (int i = int(num - 1); i >= 0; --i) {
+            for (long i = long(num - 1); i >= 0; --i) {
                 if (!fn(entries[i])) {
                     break;
                 }
