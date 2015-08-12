@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////////////////////////
+
 // E.A.T. --- Eyeball Allocation Table (EAT), written by katahiromz.
 // It's a specialized memory management system in C++. See file License.txt.
 //////////////////////////////////////////////////////////////////////////////
@@ -6,10 +6,33 @@
 #ifndef EYEBALL_ALLOCATION_TABLE
 #define EYEBALL_ALLOCATION_TABLE    0   // Version 0
 
+#ifndef __cplusplus
+    #error It requires C++ compiler. You lose.
+#endif
+
 #include <cstdlib>
 #include <cstdio>
+
+// <cstdint> or stdint.h
+#if (__cplusplus >= 201103L)
+    #include <cstdint>
+#elif defined(_WIN32)
+    #include "win32/stdint.h"
+#elif defined(__x86_64__) || defined(__ppc64__)
+    #include "linux64/stdint.h"
+#else
+    #include "x86/stdint.h"
+#endif
+
 #include <cstring>
 #include <cassert>
+
+// _wunlink
+#ifdef _WIN32
+    #include <io.h>
+#else
+    #include <unistd.h>
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 // NOTE: You can pre-#define the eat_status_dirty and eat_status_bad macros.
@@ -76,36 +99,36 @@ namespace EAT
         // Types
         typedef T_SIZE                          size_type;
         enum FLAGS {
-            SIZE_TYPE_SIZE_MASK = 0x000000FF,
-            FLAG_INVALID        = 0x00000100,
-            FLAG_HIDDEN         = 0x00000200,
-            FLAG_MOVEABLE       = 0x00000400,
-            FLAG_PUBLIC         = 0x00000800,
-            FLAG_CONFIDENTIAL   = 0x00001000,
-            FLAG_ARCHIVE        = 0x00002000,
-            FLAG_IMPORTANT      = 0x00004000,
-            FLAG_SYSTEM         = 0x00008000,
-            FLAG_UNCONFIRMED    = 0x00010000,
-            FLAG_DRAFT          = 0x00020000,
-            FLAG_FINAL          = 0x00040000,
-            FLAG_RENEWAL        = 0x00080000,
-            FLAG_EXPIRED        = 0x00100000,
-            FLAG_ENCRYPTED      = 0x00200000,
-            FLAG_INTERNAL       = 0x00400000,
-            FLAG_EXTERNAL       = 0x00800000,
-            FLAG_IMAGE          = 0x01000000,
-            FLAG_PROGRAM_DATA   = 0x02000000,
-            FLAG_MICROFILM      = 0x04000000,
-            FLAG_REPORT         = 0x08000000,
-            FLAG_LIST           = 0x10000000,
-            FLAG_EVIDENCE       = 0x20000000,
-            FLAG_AGREEMENT      = 0x40000000,
-            FLAG_COMMUNICATION  = 0x80000000
+            SIZE_TYPE_SIZE_MASK = 0x000000FFU,
+            FLAG_INVALID        = 0x00000100U,
+            FLAG_HIDDEN         = 0x00000200U,
+            FLAG_MOVEABLE       = 0x00000400U,
+            FLAG_PUBLIC         = 0x00000800U,
+            FLAG_CONFIDENTIAL   = 0x00001000U,
+            FLAG_ARCHIVE        = 0x00002000U,
+            FLAG_IMPORTANT      = 0x00004000U,
+            FLAG_SYSTEM         = 0x00008000U,
+            FLAG_UNCONFIRMED    = 0x00010000U,
+            FLAG_DRAFT          = 0x00020000U,
+            FLAG_FINAL          = 0x00040000U,
+            FLAG_RENEWAL        = 0x00080000U,
+            FLAG_EXPIRED        = 0x00100000U,
+            FLAG_ENCRYPTED      = 0x00200000U,
+            FLAG_INTERNAL       = 0x00400000U,
+            FLAG_EXTERNAL       = 0x00800000U,
+            FLAG_IMAGE          = 0x01000000U,
+            FLAG_PROGRAM_DATA   = 0x02000000U,
+            FLAG_MICROFILM      = 0x04000000U,
+            FLAG_REPORT         = 0x08000000U,
+            FLAG_LIST           = 0x10000000U,
+            FLAG_EVIDENCE       = 0x20000000U,
+            FLAG_AGREEMENT      = 0x40000000U,
+            FLAG_COMMUNICATION  = 0x80000000U
         };
 
         // Members
         char        m_magic[4];         // must be "EAT\0"
-        long        m_flags;
+        uint32_t    m_flags;
         size_type   m_total_size;
         size_type   m_boudary_1;
         size_type   m_boudary_2;
@@ -116,14 +139,19 @@ namespace EAT
             if (m_magic[0] != 'E' || m_magic[1] != 'A' ||
                 m_magic[2] != 'T' || m_magic[3] != 0)
             {
+                assert(0);
                 ret = false;
             } else if (size_type_size() != size_type(sizeof(size_type))) {
+                assert(0);
                 ret = false;
             } else if (m_flags & FLAG_INVALID) {
+                assert(0);
                 ret = false;
             } else if (m_boudary_2 < m_boudary_1) {
+                assert(0);
                 ret = false;
             } else if (m_total_size < m_boudary_2) {
+                assert(0);
                 ret = false;
             } else {
                 ret = true;
@@ -276,7 +304,7 @@ namespace EAT
             m_head.m_magic[1] = 'A';
             m_head.m_magic[2] = 'T';
             m_head.m_magic[3] = 0;
-            m_head.m_flags = long(size_type_size());
+            m_head.m_flags = uint32_t(size_type_size());
             m_head.m_total_size = t_total_size;
             m_head.m_boudary_1 = head_size();
             m_head.m_boudary_2 = t_total_size;
@@ -713,18 +741,15 @@ namespace EAT
                 using namespace std;
                 if (m_head.m_total_size < total) {
                     const size_type diff = total - m_head.m_total_size;
+                    // move entries
+                    memmove(p + diff, p, num * entry_size());
+                    m_head.m_boudary_2 += diff;
+                    // fix total
+                    m_head.m_total_size = total;
+                    ret = true;
+                } else if (m_head.m_total_size > total) {
+                    const size_type diff = m_head.m_total_size - total;
                     if (free_area_size() >= diff) {
-                        // move entries
-                        memmove(p + diff, p, num * entry_size());
-                        m_head.m_boudary_2 -= diff;
-                        // fix total
-                        m_head.m_total_size = total;
-                        assert(m_head.is_valid());
-                        ret = true;
-                    }
-                } else {
-                    if (m_head.m_total_size > total) {
-                        const size_type diff = m_head.m_total_size - total;
                         // move entries
                         memmove(p - diff, p, num * entry_size());
                         m_head.m_boudary_2 -= diff;
@@ -732,6 +757,8 @@ namespace EAT
                         m_head.m_total_size = total;
                         ret = true;
                     }
+                } else {
+                    ;
                 }
             }
             assert(is_valid());
@@ -766,7 +793,7 @@ namespace EAT
             assert(is_valid());
             return ret;
         } // load_from_file
-        bool save_to_file   (const char *file_name) const {
+        bool save_to_file(const char *file_name) const {
             assert(is_valid());
             using namespace std;
             bool ret = false;
@@ -787,10 +814,34 @@ namespace EAT
             assert(is_valid());
             return ret;
         } // save_to_file
+        #ifdef _WIN32
+            bool save_to_file(const wchar_t *file_name) const {
+                assert(is_valid());
+                using namespace std;
+                bool ret = false;
+                // create file
+                FILE *fp = _wfopen(file_name, L"wb");
+                assert(fp != NULL);
+                if (fp != NULL) {
+                    // write to file
+                    ret = (fwrite(this, sizeof(self_type), 1, fp) == 1);
+                    assert(ret);
+                    // close file
+                    fclose(fp);
+                    if (!ret) {
+                        // if not valid, delete it
+                        _wunlink(file_name);
+                    }
+                }
+                assert(is_valid());
+                return ret;
+            } // save_to_file
+        #endif  // def _WIN32
 
         // callback: bool T_ENTRY_FN(entry_type&);
         template <typename T_ENTRY_FN>
         void foreach_entry(const T_ENTRY_FN& fn) {
+            assert(is_valid());
             const size_type num = num_entries();
             entry_type *entries = get_entries();
             for (int i = int(num - 1); i >= 0; --i) {
@@ -798,10 +849,12 @@ namespace EAT
                     break;
                 }
             }
+            assert(is_valid());
         }
         // callback: bool T_ENTRY_FN(const entry_type&);
         template <typename T_ENTRY_FN>
         void foreach_entry(const T_ENTRY_FN& fn) const {
+            assert(is_valid());
             const size_type num = num_entries();
             const entry_type *entries = get_entries();
             for (int i = int(num - 1); i >= 0; --i) {
@@ -809,10 +862,12 @@ namespace EAT
                     break;
                 }
             }
+            assert(is_valid());
         }
         // callback: bool T_ENTRY_FN(entry_type&);
         template <typename T_ENTRY_FN>
         void rforeach_entry(const T_ENTRY_FN& fn) {
+            assert(is_valid());
             const size_type num = num_entries();
             entry_type *entries = get_entries();
             for (size_type i = 0; i < num; ++i) {
@@ -820,10 +875,12 @@ namespace EAT
                     break;
                 }
             }
+            assert(is_valid());
         }
         // callback: bool T_ENTRY_FN(const entry_type&);
         template <typename T_ENTRY_FN>
         void rforeach_entry(const T_ENTRY_FN& fn) const {
+            assert(is_valid());
             const size_type num = num_entries();
             const entry_type *entries = get_entries();
             for (size_type i = 0; i < num; ++i) {
@@ -831,36 +888,42 @@ namespace EAT
                     break;
                 }
             }
+            assert(is_valid());
         }
         // callback: bool T_ENTRY_FN(entry_type&);
         template <typename T_ENTRY_FN>
         void foreach_valid_entry(const T_ENTRY_FN& fn) {
-            const size_type num = num_entries();
+            assert(is_valid());
+            const ssize_t num = num_entries();
             entry_type *entries = get_entries();
-            for (int i = int(num - 1); i >= 0; --i) {
+            for (ssize_t i = ssize_t(num - 1); i >= 0; --i) {
                 if (entries[i].is_valid()) {
                     if (!fn(entries[i])) {
                         break;
                     }
                 }
             }
+            assert(is_valid());
         }
         // callback: bool T_ENTRY_FN(const entry_type&);
         template <typename T_ENTRY_FN>
         void foreach_valid_entry(const T_ENTRY_FN& fn) const {
-            const size_type num = num_entries();
+            assert(is_valid());
+            const ssize_t num = num_entries();
             const entry_type *entries = get_entries();
-            for (int i = int(num - 1); i >= 0; --i) {
+            for (ssize_t i = ssize_t(num - 1); i >= 0; --i) {
                 if (entries[i].is_valid()) {
                     if (!fn(entries[i])) {
                         break;
                     }
                 }
             }
+            assert(is_valid());
         }
         // callback: bool T_ENTRY_FN(entry_type&);
         template <typename T_ENTRY_FN>
         void rforeach_valid_entry(const T_ENTRY_FN& fn) {
+            assert(is_valid());
             const size_type num = num_entries();
             entry_type *entries = get_entries();
             for (size_type i = 0; i < num; ++i) {
@@ -870,10 +933,12 @@ namespace EAT
                     }
                 }
             }
+            assert(is_valid());
         }
         // callback: bool T_ENTRY_FN(const entry_type&);
         template <typename T_ENTRY_FN>
         void rforeach_valid_entry(const T_ENTRY_FN& fn) const {
+            assert(is_valid());
             const size_type num = num_entries();
             const entry_type *entries = get_entries();
             for (size_type i = 0; i < num; ++i) {
@@ -883,13 +948,15 @@ namespace EAT
                     }
                 }
             }
+            assert(is_valid());
         }
         // callback: bool T_PTR_FN(void *);
         template <typename T_PTR_FN>
         void foreach_valid_ptr(const T_PTR_FN& fn) {
-            const size_type num = num_entries();
+            assert(is_valid());
+            const long num = num_entries();
             entry_type *entries = get_entries();
-            for (int i = int(num - 1); i >= 0; --i) {
+            for (long i = long(num - 1); i >= 0; --i) {
                 if (entries[i].is_valid()) {
                     void *ptr = ptr_from_offset(entries[i].m_offset);
                     if (!fn(ptr)) {
@@ -897,13 +964,15 @@ namespace EAT
                     }
                 }
             }
+            assert(is_valid());
         }
         // callback: bool T_PTR_FN(const void *);
         template <typename T_PTR_FN>
         void foreach_valid_ptr(const T_PTR_FN& fn) const {
-            const size_type num = num_entries();
+            assert(is_valid());
+            const long num = num_entries();
             const entry_type *entries = get_entries();
-            for (int i = int(num - 1); i >= 0; --i) {
+            for (long i = long(num - 1); i >= 0; --i) {
                 if (entries[i].is_valid()) {
                     const void *ptr = ptr_from_offset(entries[i].m_offset);
                     if (!fn(ptr)) {
@@ -911,10 +980,12 @@ namespace EAT
                     }
                 }
             }
+            assert(is_valid());
         }
         // callback: bool T_PTR_FN(void *);
         template <typename T_PTR_FN>
         void rforeach_valid_ptr(const T_PTR_FN& fn) {
+            assert(is_valid());
             const size_type num = num_entries();
             entry_type *entries = get_entries();
             for (size_type i = 0; i < num; ++i) {
@@ -925,10 +996,12 @@ namespace EAT
                     }
                 }
             }
+            assert(is_valid());
         }
         // callback: bool T_PTR_FN(const void *);
         template <typename T_PTR_FN>
         void rforeach_valid_ptr(const T_PTR_FN& fn) const {
+            assert(is_valid());
             const size_type num = num_entries();
             const entry_type *entries = get_entries();
             for (size_type i = 0; i < num; ++i) {
@@ -939,6 +1012,7 @@ namespace EAT
                     }
                 }
             }
+            assert(is_valid());
         }
     }; // EAT::MASTER<T_SIZE, t_total_size>
 

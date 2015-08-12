@@ -102,10 +102,12 @@ void test3() {
     puts("master2");
     master2.foreach_valid_ptr(print_ptr_fn);
 
-    master1.resize_total(100);
+    printf("master1.used_area_size: %d\n", int(master1.used_area_size()));
+    master1.resize_total(120);
     puts("master1 resize_total");
     master1.foreach_valid_ptr(print_ptr_fn);
 
+    printf("master1.used_area_size: %d\n", int(master1.used_area_size()));
     master1.resize_total(200);
     puts("master1 resize_total");
     master1.foreach_valid_ptr(print_ptr_fn);
@@ -146,25 +148,39 @@ void test4() {
 }
 
 int main(void) {
-    test1<short, 300>();
-    test1<long, 300>();
-    test1<short, 400>();
-    test1<long, 400>();
+    test1<uint16_t, 300>();
+    test1<uint32_t, 300>();
+    test1<uint16_t, 400>();
+    test1<uint32_t, 400>();
 
-    test2<short, 300>();
-    test2<long, 300>();
-    test2<short, 400>();
-    test2<long, 400>();
+    test2<uint16_t, 300>();
+    test2<uint32_t, 300>();
+    test2<uint16_t, 400>();
+    test2<uint32_t, 400>();
 
-    test3<short, 300>();
-    test3<long, 300>();
-    test3<short, 400>();
-    test3<long, 400>();
+    test3<uint16_t, 300>();
+    test3<uint32_t, 300>();
+    test3<uint16_t, 400>();
+    test3<uint32_t, 400>();
 
-    test4<short, 300>();
-    test4<long, 300>();
-    test4<short, 400>();
-    test4<long, 400>();
+    test4<uint16_t, 300>();
+    test4<uint32_t, 300>();
+    test4<uint16_t, 400>();
+    test4<uint32_t, 400>();
+
+#if defined(_WIN64) || defined(__x86_64__) || defined(__ppc64__)
+    test1<size_t, 300>();
+    test1<size_t, 400>();
+
+    test2<size_t, 300>();
+    test2<size_t, 400>();
+
+    test3<size_t, 300>();
+    test3<size_t, 400>();
+
+    test4<size_t, 300>();
+    test4<size_t, 400>();
+#endif
 
     return 0;
 } // main
