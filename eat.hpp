@@ -16,12 +16,8 @@
 // <cstdint> or stdint.h
 #if (__cplusplus >= 201103L)
     #include <cstdint>
-#elif defined(_WIN32)
-    #include "win32/stdint.h"
-#elif defined(__x86_64__) || defined(__ppc64__)
-    #include "linux64/stdint.h"
 #else
-    #include "linux32/stdint.h"
+    #include "pstdint.h"
 #endif
 
 #include <cstring>
