@@ -4,7 +4,7 @@
 /* This file is public domain software (PDS). */
 
 #ifndef KATAHIROMZ_PSTDINT_H
-#define KATAHIROMZ_PSTDINT_H    0   /* Version 0 */
+#define KATAHIROMZ_PSTDINT_H    1   /* Version 1 */
 
 #if defined(__cplusplus) && (__cplusplus >= 201103L)
     #include <cstdint>
@@ -142,7 +142,7 @@
     #define UINTPTR_MIN             UINT64_MIN
     #define UINTPTR_MAX             UINT64_MAX
 #elif defined(__x86_64__) || defined(__ppc64__)
-    /* 64-bit non-Windows environment */
+    /* 64-bit non-Windows C/C++ compiler */
     #ifdef __cplusplus
         #include <climits>
     #else
@@ -254,8 +254,8 @@
     #define INTPTR_MAX              INT64_MAX
     #define UINTPTR_MIN             UINT64_MIN
     #define UINTPTR_MAX             UINT64_MAX
-#elif defined(MSDOS) || defined(DOS) || defined(_WIN16)
-    /* MS-DOS */
+#elif defined(MSDOS) || defined(DOS) || defined(_WIN16) || defined(LSI_C)
+    /* MS-DOS C/C++ compiler */
     #ifdef __cplusplus
         #include <climits>
     #else
@@ -267,7 +267,7 @@
     typedef short                   int16_t;
     typedef long                    int32_t;
 
-    typedef int                     int_fast8_t;
+    typedef short                   int_fast8_t;
     typedef short                   int_fast16_t;
     typedef long                    int_fast32_t;
 
@@ -304,7 +304,7 @@
     typedef unsigned short          uint16_t;
     typedef unsigned long           uint32_t;
 
-    typedef unsigned int            uint_fast8_t;
+    typedef unsigned short          uint_fast8_t;
     typedef unsigned short          uint_fast16_t;
     typedef unsigned long           uint_fast32_t;
 
@@ -388,19 +388,44 @@
             using ::uint64_t;
             using ::uint_fast64_t;
             using ::uint_least64_t;
-        #endif  // not 16-bit
-    } // namespace std
+        #endif  /* not 16-bit */
+    } /* namespace std */
 #endif  /* __cplusplus */
 
-typedef char KATAHIROMZ_PSTDINT_TEST_0[(sizeof(int8_t) == 1) ? 1 : -1];
-typedef char KATAHIROMZ_PSTDINT_TEST_1[(sizeof(uint8_t) == 1) ? 1 : -1];
-typedef char KATAHIROMZ_PSTDINT_TEST_2[(sizeof(int16_t) == 2) ? 1 : -1];
-typedef char KATAHIROMZ_PSTDINT_TEST_3[(sizeof(uint16_t) == 2) ? 1 : -1];
-typedef char KATAHIROMZ_PSTDINT_TEST_4[(sizeof(int32_t) == 4) ? 1 : -1];
-typedef char KATAHIROMZ_PSTDINT_TEST_5[(sizeof(uint32_t) == 4) ? 1 : -1];
+typedef char KATAHIROMZ_PSTDINT_TEST_00[(sizeof(int8_t) == 1) ? 1 : -1];
+typedef char KATAHIROMZ_PSTDINT_TEST_01[(sizeof(uint8_t) == 1) ? 1 : -1];
+typedef char KATAHIROMZ_PSTDINT_TEST_02[(sizeof(int16_t) == 2) ? 1 : -1];
+typedef char KATAHIROMZ_PSTDINT_TEST_03[(sizeof(uint16_t) == 2) ? 1 : -1];
+typedef char KATAHIROMZ_PSTDINT_TEST_04[(sizeof(int32_t) == 4) ? 1 : -1];
+typedef char KATAHIROMZ_PSTDINT_TEST_05[(sizeof(uint32_t) == 4) ? 1 : -1];
+
+typedef char KATAHIROMZ_PSTDINT_TEST_06[(sizeof(int_least8_t) >= 1) ? 1 : -1];
+typedef char KATAHIROMZ_PSTDINT_TEST_07[(sizeof(uint_least8_t) >= 1) ? 1 : -1];
+typedef char KATAHIROMZ_PSTDINT_TEST_08[(sizeof(int_least16_t) >= 2) ? 1 : -1];
+typedef char KATAHIROMZ_PSTDINT_TEST_09[(sizeof(uint_least16_t) >= 2) ? 1 : -1];
+typedef char KATAHIROMZ_PSTDINT_TEST_10[(sizeof(int_least32_t) >= 4) ? 1 : -1];
+typedef char KATAHIROMZ_PSTDINT_TEST_11[(sizeof(uint_least32_t) >= 4) ? 1 : -1];
+
+typedef char KATAHIROMZ_PSTDINT_TEST_12[(sizeof(int_fast8_t) >= 1) ? 1 : -1];
+typedef char KATAHIROMZ_PSTDINT_TEST_13[(sizeof(uint_fast8_t) >= 1) ? 1 : -1];
+typedef char KATAHIROMZ_PSTDINT_TEST_14[(sizeof(int_fast16_t) >= 2) ? 1 : -1];
+typedef char KATAHIROMZ_PSTDINT_TEST_15[(sizeof(uint_fast16_t) >= 2) ? 1 : -1];
+typedef char KATAHIROMZ_PSTDINT_TEST_16[(sizeof(int_fast32_t) >= 4) ? 1 : -1];
+typedef char KATAHIROMZ_PSTDINT_TEST_17[(sizeof(uint_fast32_t) >= 4) ? 1 : -1];
+
 #ifdef UINT64_MAX
-    typedef char KATAHIROMZ_PSTDINT_TEST_6[(sizeof(int64_t) == 8) ? 1 : -1];
-    typedef char KATAHIROMZ_PSTDINT_TEST_7[(sizeof(uint64_t) == 8) ? 1 : -1];
+    typedef char KATAHIROMZ_PSTDINT_TEST_18[(sizeof(int64_t) == 8) ? 1 : -1];
+    typedef char KATAHIROMZ_PSTDINT_TEST_19[(sizeof(uint64_t) == 8) ? 1 : -1];
+    typedef char KATAHIROMZ_PSTDINT_TEST_20[(sizeof(int_least64_t) >= 8) ? 1 : -1];
+    typedef char KATAHIROMZ_PSTDINT_TEST_21[(sizeof(uint_least64_t) >= 8) ? 1 : -1];
+    typedef char KATAHIROMZ_PSTDINT_TEST_22[(sizeof(int_fast64_t) >= 8) ? 1 : -1];
+    typedef char KATAHIROMZ_PSTDINT_TEST_23[(sizeof(uint_fast64_t) >= 8) ? 1 : -1];
+
+    typedef char KATAHIROMZ_PSTDINT_TEST_24[(sizeof(intmax_t) >= 8) ? 1 : -1];
+    typedef char KATAHIROMZ_PSTDINT_TEST_25[(sizeof(uintmax_t) >= 8) ? 1 : -1];
+#else
+    typedef char KATAHIROMZ_PSTDINT_TEST_26[(sizeof(intmax_t) >= 4) ? 1 : -1];
+    typedef char KATAHIROMZ_PSTDINT_TEST_27[(sizeof(uintmax_t) >= 4) ? 1 : -1];
 #endif
 
 #endif  /* ndef KATAHIROMZ_PSTDINT_H */
