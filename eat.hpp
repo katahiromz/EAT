@@ -163,6 +163,10 @@ namespace EAT
         size_type size_type_size() const {
             return size_type(m_flags & SIZE_TYPE_SIZE_MASK);
         }
+        void modify_flags(uint32_t add_, uint32_t remove_) {
+            m_flags &= ~remove_;
+            m_flags |= add_;
+        }
     }; // EAT::HEAD<T_SIZE>
 
     //////////////////////////////////////////////////////////////////////////
@@ -432,6 +436,9 @@ namespace EAT
         }
         const void *get_free_area() const {
             return ptr_from_offset(m_head.m_boudary_1);
+        }
+        void modify_flags(uint32_t add_, uint32_t remove_) {
+            m_head.modify_flags(add_, remove_);
         }
 
         // entries
