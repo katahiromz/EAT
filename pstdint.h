@@ -6,12 +6,14 @@
 #ifndef KATAHIROMZ_PSTDINT_H
 #define KATAHIROMZ_PSTDINT_H    1   /* Version 1 */
 
+
 #if defined(__cplusplus) && (__cplusplus >= 201103L)
     #include <cstdint>
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
     #include <stdint.h>
 #elif defined(_WIN32)
     /* 32-bit or 64-bit Windows C/C++ compiler */
+    #define KATAHIROMZ_PSTDINT_FLAG 1
     #ifdef __cplusplus
         #include <climits>
     #else
@@ -143,6 +145,7 @@
     #define UINTPTR_MAX             UINT64_MAX
 #elif defined(__x86_64__) || defined(__ppc64__)
     /* 64-bit non-Windows C/C++ compiler */
+    #define KATAHIROMZ_PSTDINT_FLAG 1
     #ifdef __cplusplus
         #include <climits>
     #else
@@ -256,6 +259,7 @@
     #define UINTPTR_MAX             UINT64_MAX
 #elif defined(MSDOS) || defined(DOS) || defined(_WIN16) || defined(LSI_C)
     /* MS-DOS C/C++ compiler */
+    #define KATAHIROMZ_PSTDINT_FLAG 1
     #ifdef __cplusplus
         #include <climits>
     #else
@@ -344,15 +348,151 @@
     #define INTPTR_MAX              INT32_MAX
     #define UINTPTR_MIN             UINT32_MIN
     #define UINTPTR_MAX             UINT32_MAX
+#elif defined(__GNUC__) || defined(__clang__)
+    /* 32-bit GNU/clang C/C++ compiler */
+    #define KATAHIROMZ_PSTDINT_FLAG 1
+    #ifdef __cplusplus
+        #include <climits>
+    #else
+        #include <limits.h>
+    #endif
+
+    /* signed types */
+    typedef signed char             int8_t;
+    typedef short                   int16_t;
+    typedef int                     int32_t;
+
+    typedef int                     int_fast8_t;
+    typedef int                     int_fast16_t;
+    typedef int                     int_fast32_t;
+
+    typedef signed char             int_least8_t;
+    typedef short                   int_least16_t;
+    typedef int                     int_least32_t;
+
+    #define INT8_MIN                SCHAR_MIN
+    #define INT16_MIN               SHRT_MIN
+    #define INT32_MIN               INT_MIN
+
+    #define INT8_MAX                SCHAR_MAX
+    #define INT16_MAX               SHRT_MAX
+    #define INT32_MAX               INT_MAX
+
+    #define INT_FAST8_MIN           INT_MIN
+    #define INT_FAST16_MIN          INT_MIN
+    #define INT_FAST32_MIN          INT_MIN
+
+    #define INT_FAST8_MAX           INT_MAX
+    #define INT_FAST16_MAX          INT_MAX
+    #define INT_FAST32_MAX          INT_MAX
+
+    #define INT_LEAST8_MIN          SCHAR_MIN
+    #define INT_LEAST16_MIN         SHRT_MIN
+    #define INT_LEAST32_MIN         INT_MIN
+
+    #define INT_LEAST8_MAX          SCHAR_MAX
+    #define INT_LEAST16_MAX         SHRT_MAX
+    #define INT_LEAST32_MAX         INT_MAX
+
+    /* unsigned types */
+    typedef unsigned char           uint8_t;
+    typedef unsigned short          uint16_t;
+    typedef unsigned int            uint32_t;
+
+    typedef unsigned int            uint_fast8_t;
+    typedef unsigned int            uint_fast16_t;
+    typedef unsigned int            uint_fast32_t;
+
+    typedef unsigned char           uint_least8_t;
+    typedef unsigned short          uint_least16_t;
+    typedef unsigned int            uint_least32_t;
+
+    #define UINT8_MIN               UCHAR_MIN
+    #define UINT16_MIN              USHRT_MIN
+    #define UINT32_MIN              UINT_MIN
+
+    #define UINT8_MAX               UCHAR_MAX
+    #define UINT16_MAX              USHRT_MAX
+    #define UINT32_MAX              UINT_MAX
+
+    #define UINT_FAST8_MIN          UINT_MIN
+    #define UINT_FAST16_MIN         UINT_MIN
+    #define UINT_FAST32_MIN         UINT_MIN
+
+    #define UINT_FAST8_MAX          UINT_MAX
+    #define UINT_FAST16_MAX         UINT_MAX
+    #define UINT_FAST32_MAX         UINT_MAX
+
+    #define UINT_LEAST8_MIN         UCHAR_MIN
+    #define UINT_LEAST16_MIN        USHRT_MIN
+    #define UINT_LEAST32_MIN        UINT_MIN
+
+    #define UINT_LEAST8_MAX         UCHAR_MAX
+    #define UINT_LEAST16_MAX        USHRT_MAX
+    #define UINT_LEAST32_MAX        UINT_MAX
+
+    /* 64-bit types */
+    __extension__
+    typedef long long               int64_t;
+    __extension__
+    typedef long long               int_fast64_t;
+    __extension__
+    typedef long long               int_least64_t;
+
+    __extension__
+    typedef unsigned long long      uint64_t;
+    __extension__
+    typedef unsigned long long      uint_fast64_t;
+    __extension__
+    typedef unsigned long long      uint_least64_t;
+
+    #ifdef _I64_MIN
+        #define INT64_MIN           _I64_MIN
+        #define INT64_MAX           _I64_MAX
+        #define INT_FAST64_MIN      _I64_MIN
+        #define INT_FAST64_MAX      _I64_MAX
+        #define INT_LEAST64_MIN     _I64_MIN
+        #define INT_LEAST64_MAX     _I64_MAX
+
+        #define UINT64_MIN          0
+        #define UINT64_MAX          _UI64_MAX
+        #define UINT_FAST64_MIN     0
+        #define UINT_FAST64_MAX     _UI64_MAX
+        #define UINT_LEAST64_MIN    0
+        #define UINT_LEAST64_MAX    _UI64_MAX
+    #elif defined(LLONG_MIN)
+        #define INT64_MIN           LLONG_MIN
+        #define INT64_MAX           LLONG_MAX
+        #define INT_FAST64_MIN      LLONG_MIN
+        #define INT_FAST64_MAX      LLONG_MAX
+        #define INT_LEAST64_MIN     LLONG_MIN
+        #define INT_LEAST64_MAX     LLONG_MAX
+
+        #define UINT64_MIN          0
+        #define UINT64_MAX          ULLONG_MAX
+        #define UINT_FAST64_MIN     0
+        #define UINT_FAST64_MAX     ULLONG_MAX
+        #define UINT_LEAST64_MIN    0
+        #define UINT_LEAST64_MAX    ULLONG_MAX
+    #else
+        #define You lose.
+    #endif
+
+    /* max */
+    __extension__
+    typedef long long               intmax_t;
+    __extension__
+    typedef unsigned long long      uintmax_t;
+
+    #define INTPTR_MIN              INT64_MIN
+    #define INTPTR_MAX              INT64_MAX
+    #define UINTPTR_MIN             UINT64_MIN
+    #define UINTPTR_MAX             UINT64_MAX
 #else
     #error Not supported yet. You lose.
 #endif
 
-#if defined(__cplusplus) && (__cplusplus >= 201103L)
-    /* OK */
-#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
-    /* OK */
-#elif defined(__cplusplus)
+#if defined(KATAHIROMZ_PSTDINT_FLAG) && defined(__cplusplus)
     namespace std {
         using ::int8_t;
         using ::int16_t;
@@ -390,7 +530,7 @@
             using ::uint_least64_t;
         #endif  /* not 16-bit */
     } /* namespace std */
-#endif  /* __cplusplus */
+#endif  /* defined(KATAHIROMZ_PSTDINT_FLAG) && defined(__cplusplus) */
 
 typedef char KATAHIROMZ_PSTDINT_TEST_00[(sizeof(int8_t) == 1) ? 1 : -1];
 typedef char KATAHIROMZ_PSTDINT_TEST_01[(sizeof(uint8_t) == 1) ? 1 : -1];
