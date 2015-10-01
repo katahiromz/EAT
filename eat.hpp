@@ -4,7 +4,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef EYEBALL_ALLOCATION_TABLE
-#define EYEBALL_ALLOCATION_TABLE    0   // Version 0
+#define EYEBALL_ALLOCATION_TABLE    1   // Version 1
 
 #ifndef __cplusplus
     #error It requires C++ compiler. You lose.
@@ -561,7 +561,7 @@ namespace EAT
         }
 
         // retrieve the size of memory
-        size_type _msize(void *ptr) const {
+        size_type _msize_(void *ptr) const {
             assert(is_valid());
             size_type ret = 0;
             const entry_type *entry = fetch_entry(ptr);
@@ -570,10 +570,10 @@ namespace EAT
                 ret = entry->m_data_size;
             }
             return ret;
-        }
+        } // _msize_
 
         // allocate
-        void *malloc(size_type siz) {
+        void *malloc_(size_type siz) {
             void *ret;
             assert(is_valid());
             if (siz <= 0) {
@@ -597,13 +597,13 @@ namespace EAT
             }
             assert(is_valid());
             return ret;
-        } // malloc
+        } // malloc_
 
-        void *calloc(size_type nelem, size_type siz) {
+        void *calloc_(size_type nelem, size_type siz) {
             assert(is_valid());
             // allocate
             size_type mult = nelem * siz;
-            void *ret = malloc(mult);
+            void *ret = malloc_(mult);
             if (ret != NULL) {
                 // fill by zero
                 using namespace std;
@@ -614,15 +614,15 @@ namespace EAT
         }
 
         // re-allocate
-        void *realloc(void *ptr, size_type siz) {
+        void *realloc_(void *ptr, size_type siz) {
             void *ret;
             assert(is_valid());
             if (ptr == NULL) {
                 // pointer is NULL
-                ret = malloc(siz);
+                ret = malloc_(siz);
             } else if (siz <= 0) {
                 // size is zero
-                free(ptr);
+                free_(ptr);
                 ret = NULL;
             } else {
                 // find the entry
@@ -633,7 +633,7 @@ namespace EAT
                     ret = NULL;
                 } else {
                     // entry was found
-                    ret = malloc(siz);
+                    ret = malloc_(siz);
                     if (ret != NULL) {
                         // copy contents
                         using namespace std;
@@ -649,10 +649,10 @@ namespace EAT
             }
             assert(is_valid());
             return ret;
-        } // realloc
+        } // realloc_
 
         // free
-        void free(void * ptr) {
+        void free_(void * ptr) {
             assert(is_valid());
             if (ptr != NULL) {
                 entry_type *entry = fetch_entry(ptr);
@@ -664,14 +664,14 @@ namespace EAT
             assert(is_valid());
         } // free
 
-        char *strdup(const char *psz) {
+        char *strdup_(const char *psz) {
             assert(is_valid());
             // calculate size
             using namespace std;
             size_type len = size_type(strlen(psz));
             size_type siz = size_type((len + 1) * sizeof(char));
             // allocate
-            char *ret = reinterpret_cast<char *>(malloc(siz));
+            char *ret = reinterpret_cast<char *>(malloc_(siz));
             if (ret != NULL) {
                 // copy contents
                 memcpy(ret, psz, siz);
@@ -681,14 +681,14 @@ namespace EAT
         }
 
         #ifdef _WIN32
-            wchar_t *wcsdup(const wchar_t *psz) {
+            wchar_t *wcsdup_(const wchar_t *psz) {
                 assert(is_valid());
                 // calculate size
                 using namespace std;
                 size_type len = size_type(wcslen(psz));
                 size_type siz = size_type((len + 1) * sizeof(wchar_t));
                 // allocate
-                wchar_t *ret = reinterpret_cast<wchar_t *>(malloc(siz));
+                wchar_t *ret = reinterpret_cast<wchar_t *>(malloc_(siz));
                 if (ret != NULL) {
                     // copy contents
                     memcpy(ret, psz, siz);
