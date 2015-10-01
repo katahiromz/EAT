@@ -4,13 +4,22 @@
 /* This file is public domain software (PDS). */
 
 #ifndef KATAHIROMZ_PSTDINT_H
-#define KATAHIROMZ_PSTDINT_H    1   /* Version 1 */
+#define KATAHIROMZ_PSTDINT_H    2   /* Version 2 */
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1800)
+    #define KATAHIROMZ_STDINT
+#endif
 
-#if defined(__cplusplus) && (__cplusplus >= 201103L)
+#if (defined(__cplusplus) && (__cplusplus >= 201103L)) || defined(KATAHIROMZ_STDINT)
     #include <cstdint>
-#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
+    #ifndef KATAHIROMZ_STDINT
+        #define KATAHIROMZ_STDINT
+    #endif
+#elif (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)) || defined(KATAHIROMZ_STDINT)
     #include <stdint.h>
+    #ifndef KATAHIROMZ_STDINT
+        #define KATAHIROMZ_STDINT
+    #endif
 #elif defined(_WIN32)
     /* 32-bit or 64-bit Windows C/C++ compiler */
     #define KATAHIROMZ_PSTDINT_FLAG 1
