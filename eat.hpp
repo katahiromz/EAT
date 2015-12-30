@@ -4,7 +4,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef EYEBALL_ALLOCATION_TABLE
-#define EYEBALL_ALLOCATION_TABLE    1   // Version 1
+#define EYEBALL_ALLOCATION_TABLE    2   // Version 2
 
 #ifndef __cplusplus
     #error It requires C++ compiler. You lose.
@@ -712,6 +712,47 @@ namespace EAT
                 for (long i = long(num - 1); i >= 0; --i) {
                     if (entries[i].is_valid()) {
                         // this entry is valid
+                        // shift to p
+                        using namespace std;
+                        memmove(p, ptr_from_offset(entries[i].m_offset),
+                                entries[i].m_data_size);
+                        // fix offset
+                        entries[i].m_offset = offset;
+                        // copy entry and move up
+                        --ep;
+                        *ep = entries[i];
+                        // increase p and offset
+                        p += entries[i].m_data_size;
+                        offset += entries[i].m_data_size;
+                    }
+                }
+                // update boundarys
+                m_head.m_boudary_1 = offset;
+                m_head.m_boudary_2 = offset_from_ptr(ep);
+            }
+            assert(is_valid());
+        } // compact
+
+        // void callback(size_type new_offset, size_type old_offset);
+        template <typename T_CALLBACK>
+        void compact(T_CALLBACK& callback) {
+            assert(is_valid());
+            const size_type num = num_entries();
+            if (num > 0) {
+                // there are some entries
+                entry_type *entries = get_entries();
+                size_type offset = head_size();
+                char *p = reinterpret_cast<char *>(get_data_area());
+
+                // do scan the data area in reverse order
+                entry_type *ep = &entries[num]; // end of entries
+                for (long i = long(num - 1); i >= 0; --i) {
+                    if (entries[i].is_valid()) {
+                        // this entry is valid
+
+                        auto new_offset = offset_from_ptr(p);
+                        callback(new_offset, entries[i].m_offset);
+
                         // shift to p
                         using namespace std;
                         memmove(p, ptr_from_offset(entries[i].m_offset),
