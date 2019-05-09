@@ -3,7 +3,7 @@
 EAT is a simple, enlargeable and mergeable virtual memory management 
 system (and filesystem?), written in C++, by katahiromz.
 
-You can do `malloc`, `calloc`, `strdup` etc. in EAT without OS.
+You can do `malloc`, `calloc`, `strdup` etc. in EAT without modern OS.
 
 ## "THE MASTER IMAGE"
 
