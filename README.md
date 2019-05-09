@@ -1,7 +1,7 @@
 # EAT (Eyeball Allocation Table)
 
 EAT is a simple, enlargeable and mergeable virtual memory management 
-system (and filesystem?), written by katahiromz.
+system (and filesystem?), written in C++, by katahiromz.
 
 ## "THE MASTER IMAGE"
 
