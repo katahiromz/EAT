@@ -13,3 +13,4 @@ compiler:
 script:
     - cmake .
     - make
+    - ctest

@@ -4,7 +4,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef EYEBALL_ALLOCATION_TABLE
-#define EYEBALL_ALLOCATION_TABLE    2   // Version 2
+#define EYEBALL_ALLOCATION_TABLE    3   // Version 3
 
 #ifndef __cplusplus
     #error It requires C++ compiler. You lose.
@@ -750,7 +750,7 @@ namespace EAT
                     if (entries[i].is_valid()) {
                         // this entry is valid
 
-                        auto new_offset = offset_from_ptr(p);
+                        size_type new_offset = offset_from_ptr(p);
                         callback(new_offset, entries[i].m_offset);
 
                         // shift to p
