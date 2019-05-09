@@ -11,6 +11,5 @@ compiler:
   - clang
 
 script:
-    - cd mcdx
     - cmake .
     - make

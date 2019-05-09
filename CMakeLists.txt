@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 2.4)
 enable_testing()
 
 # project name and language
-project(MyProject CXX)
+project(EAT CXX)
 
 # check build type
 if (NOT CMAKE_BUILD_TYPE)
