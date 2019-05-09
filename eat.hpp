@@ -4,7 +4,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifndef EYEBALL_ALLOCATION_TABLE
-#define EYEBALL_ALLOCATION_TABLE    3   // Version 3
+#define EYEBALL_ALLOCATION_TABLE    4   // Version 4
 
 #ifndef __cplusplus
     #error It requires C++ compiler. You lose.
@@ -709,7 +709,7 @@ namespace EAT
 
                 // do scan the data area in reverse order
                 entry_type *ep = &entries[num]; // end of entries
-                for (ssize_t i = ssize_t(num - 1); i >= 0; --i) {
+                for (ptrdiff_t i = ptrdiff_t(num - 1); i >= 0; --i) {
                     if (entries[i].is_valid()) {
                         // this entry is valid
                         // shift to p
@@ -746,7 +746,7 @@ namespace EAT
 
                 // do scan the data area in reverse order
                 entry_type *ep = &entries[num]; // end of entries
-                for (ssize_t i = ssize_t(num - 1); i >= 0; --i) {
+                for (ptrdiff_t i = ptrdiff_t(num - 1); i >= 0; --i) {
                     if (entries[i].is_valid()) {
                         // this entry is valid
 
@@ -888,7 +888,7 @@ namespace EAT
             assert(is_valid());
             const size_type num = num_entries();
             entry_type *entries = get_entries();
-            for (ssize_t i = ssize_t(num - 1); i >= 0; --i) {
+            for (ptrdiff_t i = ptrdiff_t(num - 1); i >= 0; --i) {
                 if (!fn(entries[i])) {
                     break;
                 }
@@ -901,7 +901,7 @@ namespace EAT
             assert(is_valid());
             const size_type num = num_entries();
             const entry_type *entries = get_entries();
-            for (ssize_t i = ssize_t(num - 1); i >= 0; --i) {
+            for (ptrdiff_t i = ptrdiff_t(num - 1); i >= 0; --i) {
                 if (!fn(entries[i])) {
                     break;
                 }
@@ -938,9 +938,9 @@ namespace EAT
         template <typename T_ENTRY_FN>
         void foreach_valid_entry(const T_ENTRY_FN& fn) {
             assert(is_valid());
-            const ssize_t num = num_entries();
+            const ptrdiff_t num = num_entries();
             entry_type *entries = get_entries();
-            for (ssize_t i = ssize_t(num - 1); i >= 0; --i) {
+            for (ptrdiff_t i = ptrdiff_t(num - 1); i >= 0; --i) {
                 if (entries[i].is_valid()) {
                     if (!fn(entries[i])) {
                         break;
@@ -953,9 +953,9 @@ namespace EAT
         template <typename T_ENTRY_FN>
         void foreach_valid_entry(const T_ENTRY_FN& fn) const {
             assert(is_valid());
-            const ssize_t num = num_entries();
+            const ptrdiff_t num = num_entries();
             const entry_type *entries = get_entries();
-            for (ssize_t i = ssize_t(num - 1); i >= 0; --i) {
+            for (ptrdiff_t i = ptrdiff_t(num - 1); i >= 0; --i) {
                 if (entries[i].is_valid()) {
                     if (!fn(entries[i])) {
                         break;
@@ -998,9 +998,9 @@ namespace EAT
         template <typename T_PTR_FN>
         void foreach_valid_ptr(const T_PTR_FN& fn) {
             assert(is_valid());
-            const ssize_t num = num_entries();
+            const ptrdiff_t num = num_entries();
             entry_type *entries = get_entries();
-            for (ssize_t i = ssize_t(num - 1); i >= 0; --i) {
+            for (ptrdiff_t i = ptrdiff_t(num - 1); i >= 0; --i) {
                 if (entries[i].is_valid()) {
                     void *ptr = ptr_from_offset(entries[i].m_offset);
                     if (!fn(ptr)) {
@@ -1014,9 +1014,9 @@ namespace EAT
         template <typename T_PTR_FN>
         void foreach_valid_ptr(const T_PTR_FN& fn) const {
             assert(is_valid());
-            const ssize_t num = num_entries();
+            const ptrdiff_t num = num_entries();
             const entry_type *entries = get_entries();
-            for (ssize_t i = ssize_t(num - 1); i >= 0; --i) {
+            for (ptrdiff_t i = ptrdiff_t(num - 1); i >= 0; --i) {
                 if (entries[i].is_valid()) {
                     const void *ptr = ptr_from_offset(entries[i].m_offset);
                     if (!fn(ptr)) {
