@@ -17,25 +17,25 @@ void test1() {
     EAT::MASTER<T_SIZE, t_total_size> master;
     typedef typename EAT::MASTER<T_SIZE, t_total_size>::entry_type entry_type;
 
-    void *p1 = master.malloc(100);
+    void *p1 = master.malloc_(100);
     assert(p1 != NULL);
-    assert(master._msize(p1) == 100);
+    assert(master._msize_(p1) == 100);
 
-    void *p2 = master.realloc(p1, 100);
+    void *p2 = master.realloc_(p1, 100);
     assert(p2 != NULL);
-    assert(master._msize(p2) == 100);
+    assert(master._msize_(p2) == 100);
 
-    master.free(p2);
+    master.free_(p2);
     master.compact();
     assert(master.empty());
 
-    char *psz1 = master.strdup("ABC");
+    char *psz1 = master.strdup_("ABC");
     assert(memcmp(psz1, "ABC", 3) == 0);
 
     T_SIZE offset = master.offset_from_ptr(psz1);
     assert(master.ptr_from_offset(offset) == psz1);
 
-    char *psz2 = master.strdup(psz1);
+    char *psz2 = master.strdup_(psz1);
     assert(memcmp(psz2, "ABC", 3) == 0);
 
     entry_type *entries = master.get_entries();
@@ -54,17 +54,17 @@ void test2() {
         EAT::eat_master<T_SIZE, t_total_size>(buf, true);
     //typedef typename EAT::MASTER<T_SIZE, t_total_size>::entry_type entry_type;
 
-    void *p2 = mas->malloc(64);
+    void *p2 = mas->malloc_(64);
     assert(p2 != NULL);
     memcpy(p2, "TEST", 4);
 
-    void *p3 = mas->realloc(p2, 128);
+    void *p3 = mas->realloc_(p2, 128);
     assert(memcmp(p3, "TEST", 4) == 0);
     assert(p3 != NULL);
-    assert(mas->_msize(p3) == 128);
+    assert(mas->_msize_(p3) == 128);
     assert(!mas->empty());
 
-    mas->free(p3);
+    mas->free_(p3);
     mas->compact();
     assert(mas->empty());
 }
@@ -82,20 +82,20 @@ void test3() {
     EAT::MASTER<T_SIZE, t_total_size> master2;
     //typedef typename EAT::MASTER<T_SIZE, t_total_size>::entry_type entry_type;
 
-    char *p1 = master1.strdup("ABC");
-    char *p2 = master1.strdup("DEF");
-    char *p3 = master1.strdup("GHI");
+    char *p1 = master1.strdup_("ABC");
+    char *p2 = master1.strdup_("DEF");
+    char *p3 = master1.strdup_("GHI");
     assert(memcmp(p1, "ABC", 3) == 0);
     assert(memcmp(p2, "DEF", 3) == 0);
     assert(memcmp(p3, "GHI", 3) == 0);
 
-    char *p4 = master2.strdup("JKL");
-    char *p5 = master2.strdup("MNO");
-    char *p6 = master2.strdup("PQR");
+    char *p4 = master2.strdup_("JKL");
+    char *p5 = master2.strdup_("MNO");
+    char *p6 = master2.strdup_("PQR");
     assert(memcmp(p4, "JKL", 3) == 0);
     assert(memcmp(p5, "MNO", 3) == 0);
     assert(memcmp(p6, "PQR", 3) == 0);
-    master2.free(p6);
+    master2.free_(p6);
 
     puts("master1");
     master1.foreach_valid_ptr(print_ptr_fn);
@@ -126,21 +126,21 @@ void test4() {
     EAT::MASTER<T_SIZE, t_total_size> master;
     //typedef typename EAT::MASTER<T_SIZE, t_total_size>::entry_type entry_type;
 
-    void *p1 = master.malloc(100);
+    void *p1 = master.malloc_(100);
     assert(p1 != NULL);
-    assert(master._msize(p1) == 100);
+    assert(master._msize_(p1) == 100);
 
-    void *p2 = master.malloc(100);
+    void *p2 = master.malloc_(100);
     assert(p2 != NULL);
-    assert(master._msize(p2) == 100);
+    assert(master._msize_(p2) == 100);
 
     assert(master.valid_data_size() == 200);
     assert(master.num_entries() == 2);
 
-    master.free(p2);
+    master.free_(p2);
     assert(master.num_entries() == 1);
     assert(master.valid_data_size() == 100);
-    master.free(p1);
+    master.free_(p1);
     assert(master.num_entries() == 0);
     assert(master.valid_data_size() == 0);
 
