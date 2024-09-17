@@ -1,10 +1,6 @@
 # EAT (Eyeball Allocation Table)
 
-[![Build Status](https://travis-ci.org/katahiromz/EAT.svg?branch=master)](https://travis-ci.org/katahiromz/EAT)
-[![Build status](https://ci.appveyor.com/api/projects/status/93n6laak96l7xkhs?svg=true)](https://ci.appveyor.com/project/katahiromz/eat)
-
-EAT is a simple, enlargeable and mergeable virtual memory management 
-system (and filesystem?), written in C++, by katahiromz.
+EAT is a simple, enlargeable and mergeable virtual memory management system (and filesystem?), written in C++, by katahiromz.
 
 You can do `malloc`, `calloc`, `strdup` etc. in EAT without modern OS.
 

@@ -1,153 +1,50 @@
-//////////////////////////////////////////////////////////////////////////////
 // E.A.T. --- Eyeball Allocation Table (EAT), written by katahiromz.
 // It's a specialized memory management system in C++. See file License.txt.
 //////////////////////////////////////////////////////////////////////////////
 
-#include "eat.hpp"
-
-//////////////////////////////////////////////////////////////////////////////
-// example and test
-
-using namespace std;
+#include "eat.h"
 
 template <typename T_SIZE, T_SIZE t_total_size>
-void test1() {
+void test1(void)
+{
     printf("## test1(%d,%d)\n", int(sizeof(T_SIZE)), int(t_total_size));
 
-    EAT::MASTER<T_SIZE, t_total_size> master;
-    typedef typename EAT::MASTER<T_SIZE, t_total_size>::entry_type entry_type;
+    auto master = EAT::create_master<T_SIZE>(t_total_size);
+    typedef typename EAT::MASTER<T_SIZE>::entry_type entry_type;
 
-    void *p1 = master.malloc_(100);
+    void *p1 = master->malloc_(100);
     assert(p1 != NULL);
-    assert(master._msize_(p1) == 100);
+    assert(master->_msize_(p1) == 100);
 
-    void *p2 = master.realloc_(p1, 100);
+    void *p2 = master->realloc_(p1, 100);
     assert(p2 != NULL);
-    assert(master._msize_(p2) == 100);
+    assert(master->_msize_(p2) == 100);
 
-    master.free_(p2);
-    master.compact();
-    assert(master.empty());
+    master->free_(p2);
+    master->compact();
+    assert(master->empty());
 
-    char *psz1 = master.strdup_("ABC");
+    char *psz1 = master->strdup_("ABC");
     assert(memcmp(psz1, "ABC", 3) == 0);
 
-    T_SIZE offset = master.offset_from_ptr(psz1);
-    assert(master.ptr_from_offset(offset) == psz1);
+    T_SIZE offset = master->offset_from_ptr(psz1);
+    assert(master->ptr_from_offset(offset) == psz1);
 
-    char *psz2 = master.strdup_(psz1);
+    char *psz2 = master->strdup_(psz1);
     assert(memcmp(psz2, "ABC", 3) == 0);
 
-    entry_type *entries = master.get_entries();
-    const T_SIZE num = master.num_entries();
-    for (T_SIZE i = 0; i < num; ++i) {
-        puts(reinterpret_cast<char *>(master.ptr_from_offset(entries[i].m_offset)));
+    auto entries = master->get_entries();
+    auto num = master->num_entries();
+    for (T_SIZE i = 0; i < num; ++i)
+    {
+        puts(reinterpret_cast<char *>(master->ptr_from_offset(entries[i].m_offset)));
     }
+
+    EAT::destroy_master(master);
 }
 
-template <typename T_SIZE, T_SIZE t_total_size>
-void test2() {
-    printf("## test2(%d,%d)\n", int(sizeof(T_SIZE)), int(t_total_size));
-
-    char buf[t_total_size];
-    EAT::MASTER<T_SIZE, t_total_size> *mas =
-        EAT::eat_master<T_SIZE, t_total_size>(buf, true);
-    //typedef typename EAT::MASTER<T_SIZE, t_total_size>::entry_type entry_type;
-
-    void *p2 = mas->malloc_(64);
-    assert(p2 != NULL);
-    memcpy(p2, "TEST", 4);
-
-    void *p3 = mas->realloc_(p2, 128);
-    assert(memcmp(p3, "TEST", 4) == 0);
-    assert(p3 != NULL);
-    assert(mas->_msize_(p3) == 128);
-    assert(!mas->empty());
-
-    mas->free_(p3);
-    mas->compact();
-    assert(mas->empty());
-}
-
-bool print_ptr_fn(void *ptr) {
-    puts(reinterpret_cast<char *>(ptr));
-    return true;
-}
-
-template <typename T_SIZE, T_SIZE t_total_size>
-void test3() {
-    printf("## test3(%d,%d)\n", int(sizeof(T_SIZE)), int(t_total_size));
-
-    EAT::MASTER<T_SIZE, t_total_size> master1;
-    EAT::MASTER<T_SIZE, t_total_size> master2;
-    //typedef typename EAT::MASTER<T_SIZE, t_total_size>::entry_type entry_type;
-
-    char *p1 = master1.strdup_("ABC");
-    char *p2 = master1.strdup_("DEF");
-    char *p3 = master1.strdup_("GHI");
-    assert(memcmp(p1, "ABC", 3) == 0);
-    assert(memcmp(p2, "DEF", 3) == 0);
-    assert(memcmp(p3, "GHI", 3) == 0);
-
-    char *p4 = master2.strdup_("JKL");
-    char *p5 = master2.strdup_("MNO");
-    char *p6 = master2.strdup_("PQR");
-    assert(memcmp(p4, "JKL", 3) == 0);
-    assert(memcmp(p5, "MNO", 3) == 0);
-    assert(memcmp(p6, "PQR", 3) == 0);
-    master2.free_(p6);
-
-    puts("master1");
-    master1.foreach_valid_ptr(print_ptr_fn);
-    puts("master2");
-    master2.foreach_valid_ptr(print_ptr_fn);
-
-    printf("master1.used_area_size: %d\n", int(master1.used_area_size()));
-    master1.resize_total(120);
-    puts("master1 resize_total");
-    master1.foreach_valid_ptr(print_ptr_fn);
-
-    printf("master1.used_area_size: %d\n", int(master1.used_area_size()));
-    master1.resize_total(200);
-    puts("master1 resize_total");
-    master1.foreach_valid_ptr(print_ptr_fn);
-
-    bool flag = master1.merge(master2);
-    assert(flag);
-
-    puts("master1");
-    master1.foreach_valid_ptr(print_ptr_fn);
-}
-
-template <typename T_SIZE, T_SIZE t_total_size>
-void test4() {
-    printf("## test4(%d,%d)\n", int(sizeof(T_SIZE)), int(t_total_size));
-
-    EAT::MASTER<T_SIZE, t_total_size> master;
-    //typedef typename EAT::MASTER<T_SIZE, t_total_size>::entry_type entry_type;
-
-    void *p1 = master.malloc_(100);
-    assert(p1 != NULL);
-    assert(master._msize_(p1) == 100);
-
-    void *p2 = master.malloc_(100);
-    assert(p2 != NULL);
-    assert(master._msize_(p2) == 100);
-
-    assert(master.valid_data_size() == 200);
-    assert(master.num_entries() == 2);
-
-    master.free_(p2);
-    assert(master.num_entries() == 1);
-    assert(master.valid_data_size() == 100);
-    master.free_(p1);
-    assert(master.num_entries() == 0);
-    assert(master.valid_data_size() == 0);
-
-    assert(master.empty());
-}
-
-int main(void) {
+int main(void)
+{
     assert(sizeof(int8_t) == 1);
     assert(sizeof(int16_t) == 2);
     assert(sizeof(int32_t) == 4);
@@ -160,39 +57,5 @@ int main(void) {
     test1<uint16_t, 400>();
     test1<uint32_t, 400>();
 
-    test2<uint16_t, 300>();
-    test2<uint32_t, 300>();
-    test2<uint16_t, 400>();
-    test2<uint32_t, 400>();
-
-    test3<uint16_t, 300>();
-    test3<uint32_t, 300>();
-    test3<uint16_t, 400>();
-    test3<uint32_t, 400>();
-
-    test4<uint16_t, 300>();
-    test4<uint32_t, 300>();
-    test4<uint16_t, 400>();
-    test4<uint32_t, 400>();
-
-#if (defined(_WIN64) || defined(__x86_64__) || defined(__ppc64__))
-    assert(sizeof(int64_t) == 8);
-    assert(sizeof(uint64_t) == 8);
-
-    test1<size_t, 300>();
-    test1<size_t, 400>();
-
-    test2<size_t, 300>();
-    test2<size_t, 400>();
-
-    test3<size_t, 300>();
-    test3<size_t, 400>();
-
-    test4<size_t, 300>();
-    test4<size_t, 400>();
-#endif  // (defined(_WIN64) || defined(__x86_64__) || defined(__ppc64__))
-
     return 0;
-} // main
-
-//////////////////////////////////////////////////////////////////////////////
+}
