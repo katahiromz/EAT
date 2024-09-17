@@ -632,7 +632,7 @@ namespace EAT
             assert(is_valid());
         }
 
-        bool resize_total(size_type total)
+        bool resize(size_type total)
         {
             assert(is_valid());
             auto num = num_entries();
@@ -730,11 +730,11 @@ namespace EAT
     template <typename T_SIZE>
     inline MASTER<T_SIZE> *resize_master(MASTER<T_SIZE> *old_master, size_t new_total_size)
     {
-        auto new_master = create_master<T_SIZE>(new_total_size);
-        if (!new_master)
+        auto new_ptr = std::realloc(old_master, new_total_size);
+        if (!new_ptr)
             return NULL;
-        new_master->merge(*old_master);
-        destroy_master(old_master);
+        auto new_master = reinterpret_cast<MASTER<T_SIZE> *>(new_ptr);
+        new_master->resize(new_total_size);
         return new_master;
     }
 
