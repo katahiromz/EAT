@@ -635,39 +635,37 @@ namespace EAT
         bool resize(size_type total)
         {
             assert(is_valid());
+
+            if (head_type::m_total_size == total)
+                return true;
+
             auto num = num_entries();
             auto entries = get_entries();
             auto p = reinterpret_cast<char *>(entries);
-            bool ret = false;
-            if (head_type::m_total_size < total)
+
+            if (head_type::m_total_size < total) // grow?
             {
                 // move entries
                 const auto diff = total - head_type::m_total_size;
                 std::memmove(p + diff, p, num * entry_size());
                 head_type::m_boudary_2 += diff;
-
-                // fix total
-                head_type::m_total_size = total;
-
-                ret = true;
             }
-            else if (head_type::m_total_size > total)
+            else // shrink?
             {
                 const auto diff = head_type::m_total_size - total;
-                if (free_area_size() >= diff)
-                {
-                    // move entries
-                    std::memmove(p - diff, p, num * entry_size());
-                    head_type::m_boudary_2 -= diff;
+                if (free_area_size() < diff)
+                    return false;
 
-                    // fix total
-                    head_type::m_total_size = total;
-
-                    ret = true;
-                }
+                // move entries
+                std::memmove(p - diff, p, num * entry_size());
+                head_type::m_boudary_2 -= diff;
             }
+
+            // fix total
+            head_type::m_total_size = total;
+
             assert(is_valid());
-            return ret;
+            return true;
         }
 
         // callback: bool T_ENTRY_FN(entry_type&);
