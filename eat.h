@@ -66,6 +66,13 @@ namespace EAT
         {
             return ((m_flags & FLAG_LOCKED) != 0);
         }
+        void lock(bool do_lock = true)
+        {
+            if (do_lock)
+                m_flags |= FLAG_LOCKED;
+            else
+                m_flags &= ~FLAG_LOCKED;
+        }
     }; // EAT::ENTRY<T_SIZE>
 
     //////////////////////////////////////////////////////////////////////////
