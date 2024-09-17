@@ -724,6 +724,7 @@ namespace EAT
     //////////////////////////////////////////////////////////////////////////////
     // EAT::create_master<T_SIZE>(total_size)
     // EAT::resize_master<T_SIZE>(old_master, new_total_size)
+    // EAT::master_from_image<T_SIZE>(image_ptr, image_size = 0)
     // EAT::destroy_master
 
     template <typename T_SIZE>
@@ -750,6 +751,19 @@ namespace EAT
         new_master->merge(*old_master);
         destroy_master(old_master);
         return new_master;
+    }
+
+    template <typename T_SIZE>
+    inline MASTER<T_SIZE> *master_from_image(void *image_ptr, size_t image_size = 0)
+    {
+        auto master = reinterpret_cast<MASTER<T_SIZE> *>(image_ptr);
+        if (!master)
+            return NULL;
+        if (image_size)
+            master->init(image_size);
+        else
+            master->init(master->total_size());
+        return master;
     }
 } // namespace EAT
 
