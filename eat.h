@@ -306,7 +306,6 @@ namespace EAT
 
             return ((head_size() <= total_size()) &&
                     (total_size() == free_area_size() + used_area_size()) &&
-                    (data_area_size() == valid_data_size() + invalid_data_size()) &&
                     (used_area_size() == head_size() + data_area_size() + table_size()) &&
                     ((table_size() % entry_size()) == 0));
         }
