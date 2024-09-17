@@ -337,28 +337,6 @@ namespace EAT
         {
             return size_type(head_type::m_boudary_1 - head_size());
         }
-        size_type valid_data_size() const
-        {
-            size_type siz = 0;
-            auto entries = get_entries();
-            for (size_type i = 0; i < num_entries(); ++i)
-            {
-                if (entries[i].is_valid())
-                    siz += entries[i].m_data_size;
-            }
-            return siz;
-        }
-        size_type invalid_data_size() const
-        {
-            size_type siz = 0;
-            auto entries = get_entries();
-            for (size_type i = 0; i < num_entries(); ++i)
-            {
-                if (!entries[i].is_valid())
-                    siz += entries[i].m_data_size;
-            }
-            return siz;
-        }
         size_type table_size() const
         {
             return size_type(head_type::m_total_size - head_type::m_boudary_2);
