@@ -274,12 +274,13 @@ namespace EAT
             head_type::m_boudary_2 = total_size;
             assert(is_valid());
         }
-        void clear()
+        void clear(bool fill_by_zero = true)
         {
             assert(is_valid());
             head_type::m_boudary_1 = head_size();
             head_type::m_boudary_2 = head_type::m_total_size;
-            std::memset(get_free_area(), 0, free_area_size());
+            if (fill_by_zero)
+                std::memset(get_free_area(), 0, free_area_size());
             assert(is_valid());
         }
 
