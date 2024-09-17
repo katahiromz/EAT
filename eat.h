@@ -11,8 +11,6 @@
 #include <cstring>
 #include <cassert>
 
-//////////////////////////////////////////////////////////////////////////////
-
 namespace EAT
 {
     //////////////////////////////////////////////////////////////////////////
@@ -723,6 +721,11 @@ namespace EAT
         }
     }; // EAT::MASTER<T_SIZE>
 
+    //////////////////////////////////////////////////////////////////////////////
+    // EAT::create_master<T_SIZE>(total_size)
+    // EAT::resize_master<T_SIZE>(old_master, new_total_size)
+    // EAT::destroy_master
+
     template <typename T_SIZE>
     inline MASTER<T_SIZE> *create_master(size_t total_size)
     {
@@ -733,20 +736,20 @@ namespace EAT
         return master;
     }
 
+    inline void destroy_master(void *master)
+    {
+        free(master);
+    }
+
     template <typename T_SIZE>
-    inline MASTER<T_SIZE> *resize_master(MASTER<T_SIZE> *master, size_t new_total_size)
+    inline MASTER<T_SIZE> *resize_master(MASTER<T_SIZE> *old_master, size_t new_total_size)
     {
         auto new_master = create_master<T_SIZE>(new_total_size);
         if (!new_master)
             return NULL;
-        new_master->merge(*master);
-        destroy_master(master);
+        new_master->merge(*old_master);
+        destroy_master(old_master);
         return new_master;
-    }
-
-    inline void destroy_master(void *master)
-    {
-        free(master);
     }
 } // namespace EAT
 
