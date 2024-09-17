@@ -730,7 +730,7 @@ namespace EAT
     template <typename T_SIZE>
     inline MASTER<T_SIZE> *create_master(size_t total_size)
     {
-        auto master = reinterpret_cast<MASTER<T_SIZE> *>(malloc(total_size));
+        auto master = reinterpret_cast<MASTER<T_SIZE> *>(std::malloc(total_size));
         if (!master)
             return NULL;
         master->init(total_size);
@@ -739,7 +739,7 @@ namespace EAT
 
     inline void destroy_master(void *master)
     {
-        free(master);
+        std::free(master);
     }
 
     template <typename T_SIZE>
