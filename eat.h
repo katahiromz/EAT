@@ -730,6 +730,11 @@ namespace EAT
     template <typename T_SIZE>
     inline MASTER<T_SIZE> *resize_master(MASTER<T_SIZE> *old_master, size_t new_total_size)
     {
+        if (new_total_size < old_master->size() &&
+            old_master->free_area_size() < old_master.size() - new_total_size)
+        {
+            return NULL;
+        }
         auto new_ptr = std::realloc(old_master, new_total_size);
         if (!new_ptr)
             return NULL;
